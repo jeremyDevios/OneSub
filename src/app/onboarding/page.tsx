@@ -182,8 +182,8 @@ function OnboardingContent() {
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-1">
                     <label className="block text-sm font-medium text-zinc-300 mb-1">Prix & Devise</label>
                     <div className="flex gap-2">
                         <Input 
@@ -220,13 +220,14 @@ function OnboardingContent() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <div>
                     <label className="block text-sm font-medium text-zinc-300 mb-1">Prochain paiement</label>
                     <Input 
                         type="date" 
                         value={subDate}
                         onChange={(e) => setSubDate(e.target.value)}
+                        className="bg-zinc-900 border-zinc-800 text-white placeholder-zinc-500 appearance-none min-h-[42px]"
                     />
                 </div>
                 <div>
@@ -280,7 +281,7 @@ function OnboardingContent() {
                              )}
 
                              {AVAILABLE_ICONS.map(iconName => {
-                                 const IconComp = (LucideIcons as any)[iconName];
+                                 const IconComp = (LucideIcons as any)[iconName] || LucideIcons.HelpCircle;
                                  return (
                                      <button
                                         key={iconName}
@@ -300,11 +301,11 @@ function OnboardingContent() {
             </div>
         </CardContent>
 
-        <CardFooter className="flex justify-between border-t border-zinc-800 p-6 bg-zinc-900/30 rounded-b-xl gap-3">
-             <Button variant="outline" className="flex-1" onClick={() => saveSubscription(true)} isLoading={loading}>
-                <Plus className="mr-2 h-4 w-4" /> Ajouter un autre
+        <CardFooter className="flex flex-col sm:flex-row justify-between border-t border-zinc-800 p-6 bg-zinc-900/30 rounded-b-xl gap-3">
+             <Button variant="outline" className="w-full sm:flex-1 h-auto py-2 px-3 whitespace-normal text-center" onClick={() => saveSubscription(true)} isLoading={loading}>
+                <Plus className="mr-2 h-4 w-4 shrink-0" /> <span className="break-words">Ajouter un autre</span>
             </Button>
-            <Button className="flex-1" onClick={() => saveSubscription(false)} isLoading={loading}>
+            <Button className="w-full sm:flex-1" onClick={() => saveSubscription(false)} isLoading={loading}>
                 Terminer <Check className="ml-2 h-4 w-4" />
             </Button>
         </CardFooter>

@@ -276,7 +276,7 @@ export default function DashboardPage() {
                                     <th className="px-6 py-4 font-medium hidden sm:table-cell cursor-pointer hover:text-white" onClick={() => setSortBy('category')}>
                                         Catégorie
                                     </th>
-                                    <th className="px-6 py-4 font-medium text-right">Actions</th>
+                                    <th className="px-2 sm:px-6 py-4 font-medium text-right"></th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-zinc-800">
@@ -327,8 +327,8 @@ export default function DashboardPage() {
                                                 {sub.category}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
-                                            <div className="flex items-center justify-end gap-2">
+                                         <td className="px-2 sm:px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                                            <div className="flex flex-col sm:flex-row items-end sm:items-center justify-end gap-1 sm:gap-2">
                                                 {/* Edit Button - could trigger modal */}
                                                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Éditer" onClick={() => sub.id && handleEdit(sub.id)}> 
                                                     <Edit2 className="h-4 w-4 text-zinc-400 hover:text-white" />
