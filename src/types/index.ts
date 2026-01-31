@@ -23,4 +23,5 @@ export interface Subscription {
   logo?: string;
   icon?: string;
   color?: string;
+  comments?: string;
 }

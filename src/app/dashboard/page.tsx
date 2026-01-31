@@ -9,7 +9,7 @@ import { Subscription, Currency } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/Card";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { getNextPaymentDate } from "@/lib/dateUtils";
-import { Calendar as CalendarIcon, CreditCard, TrendingUp, AlertCircle, Plus, Edit2, Trash2, HelpCircle, LogOut } from "lucide-react"; // Updated imports
+import { Calendar as CalendarIcon, CreditCard, TrendingUp, AlertCircle, Plus, Edit2, Trash2, HelpCircle, LogOut, Settings } from "lucide-react"; // Updated imports
 import { format, differenceInDays } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Button } from "@/components/ui/Button";
@@ -21,6 +21,7 @@ import { deleteDoc, doc } from "firebase/firestore"; // Added Import
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { EditSubscriptionDialog } from "@/components/features/EditSubscriptionDialog"; 
+import { SettingsDialog } from "@/components/features/SettingsDialog";
 import { CategoryTiles } from "@/components/dashboard/CategoryTiles";
 import { CalendarView } from "@/components/dashboard/CalendarView";
 import { generateCategoryColorMap } from "@/lib/categoryColorUtils";
@@ -41,6 +42,7 @@ export default function DashboardPage() {
   // Edit State
   const [editingSub, setEditingSub] = useState<Subscription | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
   const categoryColors = generateCategoryColorMap(subscriptions, preferredCurrency, convertCurrency);
   
@@ -185,8 +187,11 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-black p-4 md:p-8 pb-32 relative">
-      <div className="absolute top-4 right-4 z-50">
-        <Button variant="ghost" size="icon" onClick={handleLogout} className="text-zinc-400 hover:text-white" title="Se déconnecter">
+      <div className="absolute top-4 right-4 z-50 flex gap-4">
+        <Button variant="ghost" size="icon" onClick={() => setIsSettingsOpen(true)} className="bg-zinc-800/80 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded-full" title="Paramètres">
+            <Settings className="h-5 w-5" />
+        </Button>
+        <Button variant="ghost" size="icon" onClick={handleLogout} className="bg-zinc-800/80 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded-full" title="Se déconnecter">
             <LogOut className="h-5 w-5" />
         </Button>
       </div>
@@ -276,6 +281,9 @@ export default function DashboardPage() {
                                     <th className="px-6 py-4 font-medium hidden md:table-cell cursor-pointer hover:text-white" onClick={() => setSortBy('category')}>
                                         Catégorie
                                     </th>
+                                    <th className="px-6 py-4 font-medium hidden lg:table-cell text-zinc-500">
+                                        Note
+                                    </th>
                                     <th className="px-2 sm:px-6 py-4 font-medium text-right w-10 sm:w-auto"></th>
                                 </tr>
                             </thead>
@@ -296,11 +304,27 @@ export default function DashboardPage() {
 
                                     return (
                                     <tr key={sub.id} className="group hover:bg-zinc-800/50 transition-colors cursor-pointer" onClick={() => sub.id && handleEdit(sub.id)}>
-                                        <td className="px-3 sm:px-6 py-4 font-medium text-white group-hover:text-brand flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full flex items-center justify-center text-white shrink-0" style={{ backgroundColor: sub.color || '#333' }}>
-                                                <Icon className="w-4 h-4" />
+                                        <td className="px-3 sm:px-6 py-4 font-medium text-white group-hover:text-brand">
+                                            <div className="flex items-center gap-3">
+                                                <div 
+                                                    className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${sub.color?.toLowerCase() === '#ffffff' ? 'text-black' : 'text-white'}`}
+                                                    style={{ backgroundColor: sub.color || '#333' }}
+                                                >
+                                                    <Icon className="w-4 h-4" />
+                                                </div>
+                                                <div className="flex flex-col min-w-0">
+                                                    <span className="truncate max-w-[80px] sm:max-w-none">{sub.name}</span>
+                                                    <span 
+                                                        className="md:hidden inline-flex w-fit items-center rounded-sm px-1.5 py-0.5 text-[0.65rem] font-medium mt-0.5"
+                                                        style={{ 
+                                                            backgroundColor: `${categoryColor}20`, 
+                                                            color: categoryColor,
+                                                        }}
+                                                    >
+                                                        {sub.category}
+                                                    </span>
+                                                </div>
                                             </div>
-                                            <span className="truncate max-w-[80px] sm:max-w-none">{sub.name}</span>
                                         </td>
                                         <td className="px-2 sm:px-6 py-4 text-zinc-300 whitespace-nowrap">
                                             {formatCurrency(sub.price, sub.currency)} <span className="text-xs text-zinc-500 hidden sm:inline">/ {freqSuffix[sub.frequency] || sub.frequency}</span>
@@ -310,7 +334,7 @@ export default function DashboardPage() {
                                                 <span className={isUrgent ? 'text-brand font-medium' : 'text-zinc-400'}>
                                                     {format(sub.nextPaymentDate as Date, 'd MMM', { locale: fr })}
                                                 </span>
-                                                <span className="text-xs text-zinc-600 hidden sm:inline">
+                                                <span className="text-xs text-zinc-600 italic sm:not-italic sm:text-zinc-600 block">
                                                     {freqLabels[sub.frequency] || sub.frequency}
                                                 </span>
                                             </div>
@@ -326,6 +350,9 @@ export default function DashboardPage() {
                                             >
                                                 {sub.category}
                                             </span>
+                                        </td>
+                                        <td className="px-6 py-4 hidden lg:table-cell text-zinc-500 text-sm max-w-[200px] truncate" title={sub.comments}>
+                                            {sub.comments}
                                         </td>
                                          <td className="px-2 sm:px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                                             <div className="flex flex-col sm:flex-row items-center justify-end gap-2 sm:gap-2">
@@ -343,7 +370,7 @@ export default function DashboardPage() {
 
                                 {sortedSubs.length === 0 && (
                                      <tr>
-                                        <td colSpan={4} className="px-6 py-12 text-center text-zinc-500">
+                                        <td colSpan={6} className="px-6 py-12 text-center text-zinc-500">
                                             Aucun abonnement trouvé. <Link href="/onboarding" className="text-brand underline">Ajoutez-en un</Link>
                                         </td>
                                      </tr>
@@ -353,7 +380,10 @@ export default function DashboardPage() {
                     </div>
                 ) : (
                     <div className="flex justify-center">
-                        <CalendarView subscriptions={subscriptions} />
+                        <CalendarView 
+                            subscriptions={subscriptions} 
+                            onEditSubscription={(sub) => sub.id && handleEdit(sub.id)}
+                        />
                     </div>
                 )}
             </div>
@@ -403,6 +433,15 @@ export default function DashboardPage() {
         subscription={editingSub} 
         open={isEditDialogOpen} 
         onOpenChange={setIsEditDialogOpen} 
+        onDelete={(subId) => {
+            setIsEditDialogOpen(false);
+            handleDelete(subId);
+        }}
+      />
+      
+      <SettingsDialog 
+        open={isSettingsOpen}
+        onOpenChange={setIsSettingsOpen}
       />
 
        {/* Floating Action Button */}

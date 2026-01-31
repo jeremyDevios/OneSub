@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
+import { ForegroundNotificationListener } from "@/components/features/ForegroundNotificationListener";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,6 +18,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "OneSub",
   description: "Subscription Management",
+  manifest: "/manifest.json",
   icons: {
     icon: "/favicon.png",
     apple: "/logo.png",
@@ -35,6 +37,7 @@ export default function RootLayout({
       >
         <AuthProvider>
           <CurrencyProvider>
+            <ForegroundNotificationListener />
             <div className="flex min-h-screen flex-col">
               <div className="flex-1">
                 {children}

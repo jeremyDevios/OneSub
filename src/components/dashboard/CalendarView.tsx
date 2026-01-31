@@ -9,9 +9,10 @@ import * as LucideIcons from "lucide-react";
 
 interface CalendarViewProps {
   subscriptions: Subscription[];
+  onEditSubscription?: (sub: Subscription) => void;
 }
 
-export function CalendarView({ subscriptions }: CalendarViewProps) {
+export function CalendarView({ subscriptions, onEditSubscription }: CalendarViewProps) {
   const { format: formatCurrency } = useCurrency();
   const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -91,15 +92,17 @@ export function CalendarView({ subscriptions }: CalendarViewProps) {
   };
 
   const [hoveredDay, setHoveredDay] = useState<Date | null>(null);
-  const [selectedDayInfo, setSelectedDayInfo] = useState<{ day: Date; subs: Subscription[] } | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const handleDayClick = (day: Date, daySubs: Subscription[]) => {
       if (daySubs.length > 0) {
-          setSelectedDayInfo({ day, subs: daySubs });
+          setSelectedDate(day);
       } else {
-          setSelectedDayInfo(null);
+          setSelectedDate(null);
       }
   };
+
+  const selectedDaySubs = selectedDate ? getSubsForDay(selectedDate) : [];
 
   return (
     <div className="bg-[#1e1e2e] rounded-3xl p-6 shadow-2xl text-white w-full h-full flex flex-col relative">
@@ -133,7 +136,7 @@ export function CalendarView({ subscriptions }: CalendarViewProps) {
          {/* Days */}
          {days.map(day => {
              const daySubs = getSubsForDay(day);
-             const isSelected = selectedDayInfo && isSameDay(day, selectedDayInfo.day);
+             const isSelected = selectedDate && isSameDay(day, selectedDate);
              const isToday = isSameDay(day, new Date());
              const isPast = isBefore(day, startOfDay(new Date()));
              const hasSubs = daySubs.length > 0;
@@ -164,9 +167,14 @@ export function CalendarView({ subscriptions }: CalendarViewProps) {
                          <div className="absolute bottom-1 right-1 flex -space-x-2 overflow-hidden">
                              {daySubs.slice(0, 3).map((sub, idx) => {
                                  const Icon = getIconComponent(sub);
+                                 const isLight = sub.color?.toLowerCase() === '#ffffff';
                                  return (
-                                     <div key={`${sub.id}-${idx}`} className="w-5 h-5 sm:w-7 sm:h-7 rounded-full border-2 border-[#1e1e2e] flex items-center justify-center relative bg-zinc-800 text-white" style={{ backgroundColor: sub.color || '#333', zIndex: 10 + idx }}>
-                                         <Icon className="w-2.5 h-2.5 sm:w-4 sm:h-4 text-white" />
+                                     <div 
+                                        key={`${sub.id}-${idx}`} 
+                                        className={`w-5 h-5 sm:w-7 sm:h-7 rounded-full border-2 border-[#1e1e2e] flex items-center justify-center relative bg-zinc-800 ${isLight ? 'text-black' : 'text-white'}`} 
+                                        style={{ backgroundColor: sub.color || '#333', zIndex: 10 + idx }}
+                                    >
+                                         <Icon className="w-2.5 h-2.5 sm:w-4 sm:h-4" />
                                      </div>
                                  )
                              })}
@@ -183,23 +191,28 @@ export function CalendarView({ subscriptions }: CalendarViewProps) {
       </div>
 
       {/* Details Overlay (Mobile/Desktop) */}
-      {selectedDayInfo && (
-        <div className="absolute inset-x-4 bottom-4 top-20 bg-black/80 backdrop-blur-md rounded-2xl p-4 z-50 overflow-y-auto animate-in fade-in slide-in-from-bottom-4 flex flex-col" onClick={() => setSelectedDayInfo(null)}>
+      {selectedDate && selectedDaySubs.length > 0 && (
+        <div className="absolute inset-x-4 bottom-4 top-20 bg-black/80 backdrop-blur-md rounded-2xl p-4 z-50 overflow-y-auto animate-in fade-in slide-in-from-bottom-4 flex flex-col" onClick={() => setSelectedDate(null)}>
             <div className="flex justify-between items-center mb-4" onClick={e => e.stopPropagation()}>
                 <h3 className="text-xl font-bold text-white">
-                    {format(selectedDayInfo.day, 'd MMMM', { locale: fr })}
+                    {format(selectedDate, 'd MMMM', { locale: fr })}
                 </h3>
-                <button onClick={() => setSelectedDayInfo(null)} className="p-2 hover:bg-white/10 rounded-full">
+                <button onClick={() => setSelectedDate(null)} className="p-2 hover:bg-white/10 rounded-full">
                     <LucideIcons.X className="w-5 h-5" />
                 </button>
             </div>
             
             <div className="space-y-2 flex-1" onClick={e => e.stopPropagation()}>
-                {selectedDayInfo.subs.map(sub => {
+                {selectedDaySubs.map(sub => {
                     const Icon = getIconComponent(sub);
+                    const isLight = sub.color?.toLowerCase() === '#ffffff';
                     return (
-                        <div key={sub.id} className="flex items-center gap-4 bg-white/5 p-3 rounded-xl border border-white/5">
-                            <div className="w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0 shadow-lg" style={{ backgroundColor: sub.color || '#333' }}>
+                        <div 
+                            key={sub.id} 
+                            onClick={() => onEditSubscription?.(sub)}
+                            className="flex items-center gap-4 bg-white/5 p-3 rounded-xl border border-white/5 cursor-pointer hover:bg-white/10 transition-colors"
+                        >
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-lg ${isLight ? 'text-black' : 'text-white'}`} style={{ backgroundColor: sub.color || '#333' }}>
                                 <Icon className="w-5 h-5" />
                             </div>
                             <div className="flex-1 min-w-0">
@@ -221,7 +234,7 @@ export function CalendarView({ subscriptions }: CalendarViewProps) {
              <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-end">
                 <span className="text-zinc-400 pb-1">Total à payer</span>
                 <span className="text-2xl font-bold text-white">
-                    {formatCurrency(selectedDayInfo.subs.reduce((acc, s) => acc + s.price, 0), selectedDayInfo.subs[0]?.currency || 'EUR')}
+                    {formatCurrency(selectedDaySubs.reduce((acc, s) => acc + s.price, 0), selectedDaySubs[0]?.currency || 'EUR')}
                 </span>
             </div>
         </div>

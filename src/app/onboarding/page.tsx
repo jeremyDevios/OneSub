@@ -7,6 +7,7 @@ import { db } from "@/lib/firebase";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/Card";
 import { Currency, Frequency } from "@/types";
@@ -39,6 +40,7 @@ function OnboardingContent() {
   const [subFrequency, setSubFrequency] = useState<Frequency>("monthly");
   const [subDate, setSubDate] = useState("");
   const [subCategory, setSubCategory] = useState("Divertissement");
+  const [subComments, setSubComments] = useState("");
   
   // Customization
   const [subColor, setSubColor] = useState("#FF9F0A");
@@ -74,28 +76,35 @@ function OnboardingContent() {
 
   const saveSubscription = async (addAnother: boolean = false) => {
     if (!user) return;
+    
+    // Validation
+    if (!subName || !subPrice || !subDate) {
+        alert("Veuillez remplir tous les champs obligatoires (Nom, Prix, Date).");
+        return;
+    }
+
     setLoading(true);
     try {
-        if (subName && subPrice && subDate) {
-            await addDoc(collection(db, "subscriptions"), {
-                userId: user.uid,
-                name: subName,
-                price: parseFloat(subPrice),
-                currency: subCurrency,
-                frequency: subFrequency,
-                nextPaymentDate: Timestamp.fromDate(new Date(subDate)),
-                category: subCategory,
-                status: 'active',
-                createdAt: Timestamp.now(),
-                color: subColor,
-                icon: subIcon
-            });
-        }
+        await addDoc(collection(db, "subscriptions"), {
+            userId: user.uid,
+            name: subName,
+            price: parseFloat(subPrice),
+            currency: subCurrency,
+            frequency: subFrequency,
+            nextPaymentDate: Timestamp.fromDate(new Date(subDate)),
+            category: subCategory,
+            status: 'active',
+            createdAt: Timestamp.now(),
+            color: subColor,
+            icon: subIcon,
+            comments: subComments
+        });
       
       if (addAnother) {
         setSubName("");
         setSubPrice("");
         setSubDate("");
+        setSubComments("");
         setSubColor("#FF9F0A");
         setSubscriptionCount(prev => prev + 1);
         // Keep currency/category as they might be similar
@@ -130,8 +139,8 @@ function OnboardingContent() {
                 </CardTitle>
                 <div className="flex items-center gap-3">
                      {subIcon && (
-                        <div className="h-12 w-12 rounded-xl flex items-center justify-center shadow-lg transition-colors border border-white/5" style={{ backgroundColor: subColor }}>
-                            <SelectedIcon className="h-6 w-6 text-white" />
+                        <div className={`h-12 w-12 rounded-xl flex items-center justify-center shadow-lg transition-colors border border-white/5 ${subColor?.toLowerCase() === '#ffffff' ? 'text-black' : 'text-white'}`} style={{ backgroundColor: subColor }}>
+                            <SelectedIcon className="h-6 w-6" />
                         </div>
                     )}
                     {(isAddMode || subscriptionCount > 0) && (
@@ -188,6 +197,7 @@ function OnboardingContent() {
                     <div className="flex gap-2">
                         <Input 
                             type="number" 
+                            inputMode="decimal"
                             step="0.01" 
                             placeholder="0.00"
                             className="flex-1"
@@ -241,6 +251,16 @@ function OnboardingContent() {
                         ))}
                     </Select>
                 </div>
+              </div>
+
+              <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-1">Commentaires (Optionnel)</label>
+                  <Textarea 
+                      placeholder="Ajouter une note..." 
+                      value={subComments}
+                      onChange={(e) => setSubComments(e.target.value)}
+                      className="resize-none"
+                  />
               </div>
 
               {/* Customization Section */}

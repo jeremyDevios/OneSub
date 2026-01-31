@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/Dialog";
 import { Subscription, Currency, Frequency } from "@/types";
 import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { doc, updateDoc } from "firebase/firestore";
@@ -17,9 +18,10 @@ interface EditSubscriptionDialogProps {
   subscription: Subscription | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onDelete?: (id: string) => void;
 }
 
-export function EditSubscriptionDialog({ subscription, open, onOpenChange }: EditSubscriptionDialogProps) {
+export function EditSubscriptionDialog({ subscription, open, onOpenChange, onDelete }: EditSubscriptionDialogProps) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<Partial<Subscription>>({});
 
@@ -34,6 +36,7 @@ export function EditSubscriptionDialog({ subscription, open, onOpenChange }: Edi
         category: subscription.category,
         color: subscription.color,
         icon: subscription.icon,
+        comments: subscription.comments || ''
       });
     }
   }, [subscription]);
@@ -74,7 +77,7 @@ export function EditSubscriptionDialog({ subscription, open, onOpenChange }: Edi
         <div className="grid gap-4 py-4">
            <h2 className="text-xl font-bold flex items-center gap-3">
               <div 
-                  className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg"
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${formData.color?.toLowerCase() === '#ffffff' ? 'text-black' : 'text-white'}`}
                   style={{ backgroundColor: formData.color || '#333' }}
               >
                  <SelectedIcon className="h-5 w-5" />
@@ -110,6 +113,7 @@ export function EditSubscriptionDialog({ subscription, open, onOpenChange }: Edi
                  <label className="text-sm font-medium text-zinc-400">Prix</label>
                  <Input 
                     type="number"
+                    inputMode="decimal"
                     value={formData.price || ''} 
                     onChange={e => setFormData({...formData, price: Number(e.target.value)})}
                  />
@@ -147,6 +151,15 @@ export function EditSubscriptionDialog({ subscription, open, onOpenChange }: Edi
                     value={dateValue}
                     onChange={e => setFormData({...formData, nextPaymentDate: new Date(e.target.value)})}
                  />
+           </div>
+
+           <div className="space-y-2">
+                <label className="text-sm font-medium text-zinc-400">Commentaires</label>
+                <Textarea 
+                    value={formData.comments || ''}
+                    onChange={e => setFormData({...formData, comments: e.target.value})}
+                    placeholder="Notes..."
+                />
            </div>
 
            {/* Customization Section */}
@@ -203,9 +216,20 @@ export function EditSubscriptionDialog({ subscription, open, onOpenChange }: Edi
               </div>
            </div>
 
-           <div className="flex justify-end gap-3 mt-4">
-              <Button variant="ghost" onClick={() => onOpenChange(false)}>Annuler</Button>
-              <Button onClick={handleSave} isLoading={loading}>Enregistrer</Button>
+           <div className="flex justify-between gap-3 mt-4">
+              {onDelete && subscription?.id && (
+                  <Button 
+                    variant="ghost" 
+                    className="text-red-500 hover:text-white hover:bg-red-600"
+                    onClick={() => onDelete(subscription.id!)}
+                  >
+                    Supprimer
+                  </Button>
+              )}
+              <div className="flex gap-2">
+                <Button variant="ghost" onClick={() => onOpenChange(false)}>Annuler</Button>
+                <Button onClick={handleSave} isLoading={loading}>Enregistrer</Button>
+              </div>
            </div>
         </div>
       </DialogContent>
