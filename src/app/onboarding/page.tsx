@@ -246,18 +246,18 @@ function OnboardingContent() {
               {/* Customization Section */}
               <div className="border-t border-zinc-800 pt-4 mt-2">
                   <label className="block text-sm font-medium text-zinc-300 mb-3">Personnalisation</label>
-                  <div className="flex flex-wrap gap-4 items-start">
+                  <div className="flex flex-col gap-6">
                       
                       {/* Color Picker */}
                       <div className="space-y-2">
                           <span className="text-xs text-zinc-500 block">Couleur</span>
-                          <div className="flex flex-wrap gap-2 max-w-[200px]">
+                          <div className="flex flex-wrap gap-2">
                             {COLORS.map(color => (
                                 <button
                                     key={color}
                                     type="button"
                                     onClick={() => setSubColor(color)}
-                                    className={`w-6 h-6 rounded-full border border-black/20 ${subColor === color ? 'ring-2 ring-white scale-110' : 'hover:scale-110'} transition-all`}
+                                    className={`w-8 h-8 rounded-full border border-black/20 ${subColor === color ? 'ring-2 ring-white scale-110' : 'hover:scale-110'} transition-all`}
                                     style={{ backgroundColor: color }}
                                 />
                             ))}
@@ -265,9 +265,9 @@ function OnboardingContent() {
                       </div>
 
                       {/* Icon Picker */}
-                      <div className="space-y-2 flex-1">
+                      <div className="space-y-2">
                           <span className="text-xs text-zinc-500 block">Icône</span>
-                          <div className="grid grid-cols-6 gap-2">
+                          <div className="grid grid-cols-6 sm:grid-cols-8 gap-2">
                              {/* Show current Brand icon if selected but not in standard list */}
                              {getBrandIcon(subIcon) && (
                                  <button

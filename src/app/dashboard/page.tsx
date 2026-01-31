@@ -264,19 +264,19 @@ export default function DashboardPage() {
                         <table className="w-full text-left text-sm">
                             <thead className="bg-zinc-900 text-zinc-400">
                                 <tr>
-                                    <th className="px-6 py-4 font-medium cursor-pointer hover:text-white" onClick={() => setSortBy('name')}>
+                                    <th className="px-3 sm:px-6 py-4 font-medium cursor-pointer hover:text-white" onClick={() => setSortBy('name')}>
                                         Abonnement
                                     </th>
-                                    <th className="px-6 py-4 font-medium cursor-pointer hover:text-white" onClick={() => setSortBy('price')}>
+                                    <th className="px-2 sm:px-6 py-4 font-medium cursor-pointer hover:text-white" onClick={() => setSortBy('price')}>
                                         Coût
                                     </th>
-                                    <th className="px-6 py-4 font-medium cursor-pointer hover:text-white" onClick={() => setSortBy('date')}>
-                                        Prochaine Échéance
+                                    <th className="px-2 sm:px-6 py-4 font-medium cursor-pointer hover:text-white" onClick={() => setSortBy('date')}>
+                                        Proch. Éch.
                                     </th>
-                                    <th className="px-6 py-4 font-medium hidden sm:table-cell cursor-pointer hover:text-white" onClick={() => setSortBy('category')}>
+                                    <th className="px-6 py-4 font-medium hidden md:table-cell cursor-pointer hover:text-white" onClick={() => setSortBy('category')}>
                                         Catégorie
                                     </th>
-                                    <th className="px-2 sm:px-6 py-4 font-medium text-right"></th>
+                                    <th className="px-2 sm:px-6 py-4 font-medium text-right w-10 sm:w-auto"></th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-zinc-800">
@@ -296,26 +296,26 @@ export default function DashboardPage() {
 
                                     return (
                                     <tr key={sub.id} className="group hover:bg-zinc-800/50 transition-colors cursor-pointer" onClick={() => sub.id && handleEdit(sub.id)}>
-                                        <td className="px-6 py-4 font-medium text-white group-hover:text-brand flex items-center gap-3">
+                                        <td className="px-3 sm:px-6 py-4 font-medium text-white group-hover:text-brand flex items-center gap-3">
                                             <div className="w-8 h-8 rounded-full flex items-center justify-center text-white shrink-0" style={{ backgroundColor: sub.color || '#333' }}>
                                                 <Icon className="w-4 h-4" />
                                             </div>
-                                            {sub.name}
+                                            <span className="truncate max-w-[80px] sm:max-w-none">{sub.name}</span>
                                         </td>
-                                        <td className="px-6 py-4 text-zinc-300">
-                                            {formatCurrency(sub.price, sub.currency)} <span className="text-xs text-zinc-500">/ {freqSuffix[sub.frequency] || sub.frequency}</span>
+                                        <td className="px-2 sm:px-6 py-4 text-zinc-300 whitespace-nowrap">
+                                            {formatCurrency(sub.price, sub.currency)} <span className="text-xs text-zinc-500 hidden sm:inline">/ {freqSuffix[sub.frequency] || sub.frequency}</span>
                                         </td>
-                                        <td className="px-6 py-4">
+                                        <td className="px-2 sm:px-6 py-4 whitespace-nowrap">
                                             <div className="flex flex-col">
                                                 <span className={isUrgent ? 'text-brand font-medium' : 'text-zinc-400'}>
-                                                    {format(sub.nextPaymentDate as Date, 'd MMM yyyy', { locale: fr })}
+                                                    {format(sub.nextPaymentDate as Date, 'd MMM', { locale: fr })}
                                                 </span>
-                                                <span className="text-xs text-zinc-600">
+                                                <span className="text-xs text-zinc-600 hidden sm:inline">
                                                     {freqLabels[sub.frequency] || sub.frequency}
                                                 </span>
                                             </div>
                                         </td>
-                                         <td className="px-6 py-4 hidden sm:table-cell">
+                                         <td className="px-6 py-4 hidden md:table-cell">
                                             <span 
                                                 className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
                                                 style={{ 
@@ -328,7 +328,7 @@ export default function DashboardPage() {
                                             </span>
                                         </td>
                                          <td className="px-2 sm:px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
-                                            <div className="flex flex-col sm:flex-row items-end sm:items-center justify-end gap-1 sm:gap-2">
+                                            <div className="flex flex-col sm:flex-row items-center justify-end gap-2 sm:gap-2">
                                                 {/* Edit Button - could trigger modal */}
                                                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Éditer" onClick={() => sub.id && handleEdit(sub.id)}> 
                                                     <Edit2 className="h-4 w-4 text-zinc-400 hover:text-white" />
