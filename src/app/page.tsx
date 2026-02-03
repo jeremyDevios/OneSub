@@ -4,8 +4,28 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, CheckCircle } from "lucide-react";
 import { BackgroundLogos } from "@/components/landing/BackgroundLogos";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function LandingPage() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.push("/dashboard");
+    }
+  }, [user, loading, router]);
+
+  if (loading || user) {
+    return (
+      <div className="flex min-h-screen flex-col bg-black items-center justify-center">
+         <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-700 border-t-brand"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative flex min-h-screen flex-col bg-black text-white overflow-hidden">
       <BackgroundLogos />
